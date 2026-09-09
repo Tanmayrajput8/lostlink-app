@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Claim Item – LostLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">Lost<span>Link</span></a>
+      <div id="nav-links" class="nav-links">
+        <a href="items.html" class="nav-link">Browse Items</a>
+        <a href="report-lost.html" class="nav-link">Report Lost</a>
+        <a href="report-found.html" class="nav-link">Report Found</a>
+      </div>
+      <div id="nav-right" class="nav-right">
+        <a href="login.html" class="btn btn-sm btn-ghost">Login</a>
+        <a href="register.html" class="btn btn-sm btn-primary">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Page Header -->
+  <header style="background: var(--surface); border-bottom: 1px solid var(--border); padding: 28px 0 24px;">
+    <div class="container" style="max-width: 1100px;">
+      <a href="items.html" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 12px; text-decoration: none;">
+        &larr; Back to catalog
+      </a>
+      <h1 style="font-size: 24px; font-weight: 700; color: var(--slate-900); margin: 0 0 6px;">Claim Item</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin: 0; max-width: 640px; line-height: 1.5;">
+        Submit ownership details for this item. Your request will be reviewed by the administrator.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content Area -->
+  <main class="container" style="max-width: 1100px; padding: 32px 20px 80px;">
+    <!-- Notice / State Container -->
+    <div id="state-container" style="display: none;">
+      <div class="state-notice-card">
+        <h2 id="state-title" class="state-notice-title">Notice</h2>
+        <p id="state-desc" class="state-notice-desc"></p>
+        <a id="state-btn" href="items.html" class="btn btn-primary">Return to Catalog</a>
+      </div>
+    </div>
+
+    <!-- Success Container -->
+    <div id="success-container" style="display: none;">
+      <div class="state-notice-card" style="border-top: 4px solid var(--primary);">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--blue-50); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h2 class="state-notice-title">Claim Submitted Successfully</h2>
+        <p class="state-notice-desc">
+          Your verification details have been recorded and queued for administrator review. You can track this request anytime in your dashboard.
+        </p>
+        <div style="display: flex; gap: 12px; justify-content: center;">
+          <a href="dashboard.html" class="btn btn-primary">Go to Dashboard</a>
+          <a href="items.html" class="btn btn-secondary">Browse More Items</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main 2-Column Layout -->
+    <div id="claim-layout" class="claim-grid-layout" style="display: none;">
+      <!-- Left Column: Item Information Card -->
+      <aside class="item-info-card">
+        <div class="item-section-label">Item Information</div>
+        <div id="item-image-box" class="item-preview-img-wrap">
+          <!-- Loaded dynamically -->
+        </div>
+
+        <h2 id="item-title" class="item-info-title"></h2>
+
+        <div class="item-meta-strip">
+          <span class="item-meta-item">
+            <span id="item-type-badge" class="badge"></span>
+          </span>
+          <span class="item-meta-divider">&bull;</span>
+          <span class="item-meta-item">
+            <span id="item-category" style="font-weight: 500;"></span>
+          </span>
+          <span class="item-meta-divider">&bull;</span>
+          <span class="item-meta-item" style="color: var(--text-muted);">
+            <span id="item-date"></span>
+          </span>
+        </div>
+
+        <div style="font-size: 13px; color: var(--slate-600); margin-bottom: 14px;">
+          <strong style="color: var(--slate-800);">Location:</strong> <span id="item-location"></span>
+        </div>
+
+        <div class="item-section-label">Public Description</div>
+        <p id="item-desc" class="item-description-text"></p>
+
+        <div class="item-status-strip">
+          <span style="font-size: 12px; color: var(--text-muted); font-weight: 500;">Status</span>
+          <span id="item-status-badge" class="badge badge-active">Available for Claim</span>
+        </div>
+      </aside>
+
+      <!-- Right Column: Claim Form Card -->
+      <section class="claim-form-card">
+        <div class="claim-form-header">
+          <h2>Claim This Item</h2>
+          <p>Provide details that can help verify your ownership.</p>
+        </div>
+
+        <!-- Form Completeness Preview -->
+        <div class="verification-score-card">
+          <div class="verification-score-header">
+            <span class="verification-score-title">Form Completeness</span>
+            <span id="score-val" class="verification-score-value">0%</span>
+          </div>
+          <div class="verification-score-progress">
+            <div id="score-fill" class="verification-score-fill" style="width: 0%;"></div>
+          </div>
+          <div class="verification-score-sub">
+            Completeness of submitted details. All claims undergo manual administrator review.
+          </div>
+        </div>
+
+        <form id="claim-form" novalidate>
+          <input type="hidden" id="itemId" name="itemId" value="" />
+
+          <!-- Ownership explanation -->
+          <div class="form-group">
+            <label class="form-label required" for="description">Ownership Details *</label>
+            <textarea
+              id="description"
+              name="description"
+              class="form-textarea"
+              rows="3"
+              placeholder="Explain how, where, or when you lost this item, or any other relevant circumstances."
+              minlength="10"
+              maxlength="1000"
+              required
+              data-validate="description"
+            ></textarea>
+            <span class="form-hint" style="font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block;">
+              Mention identifying details, approximate date, unique marks, or other information that can verify ownership.
+            </span>
+          </div>
+
+          <!-- Distinguishing Feature -->
+          <div class="form-group">
+            <label class="form-label required" for="uniqueFeature">Distinguishing Feature *</label>
+            <textarea
+              id="uniqueFeature"
+              name="uniqueFeature"
+              class="form-textarea"
+              rows="3"
+              placeholder="e.g. Serial number, custom lockscreen, scratch on rear casing, specific contents of inner compartment."
+              minlength="5"
+              maxlength="500"
+              required
+            ></textarea>
+            <span class="form-hint" style="font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block;">
+              Specific unlisted details to verify your claim. Keep it private and exact.
+            </span>
+          </div>
+
+          <!-- Date Lost & Contact Phone -->
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="lostDate">Date Lost</label>
+              <input
+                type="date"
+                id="lostDate"
+                name="lostDate"
+                class="form-input"
+              />
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="contactPhone">Contact Phone</label>
+              <input
+                type="tel"
+                id="contactPhone"
+                name="contactPhone"
+                class="form-input"
+                placeholder="10-digit number"
+                pattern="[0-9]{10}"
+                maxlength="10"
+                data-validate="phone"
+              />
+            </div>
+          </div>
+
+          <!-- Proof Document / Photo -->
+          <div class="form-group">
+            <label class="form-label" for="proofImage">Proof of Ownership or Receipt (Optional)</label>
+            <div id="proof-dropzone" class="clean-file-dropzone">
+              <div id="proof-prompt">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                <div class="clean-file-title">Upload receipt, invoice, or previous photo</div>
+                <div class="clean-file-hint">JPG, PNG, or WEBP up to 5MB</div>
+              </div>
+              <div id="proof-preview-wrap" style="display: none; position: relative; max-width: 220px; margin: 0 auto;">
+                <img id="proof-preview" src="" alt="Proof Preview" style="width: 100%; border-radius: var(--radius-sm); max-height: 160px; object-fit: cover; border: 1px solid var(--border);" />
+                <button type="button" id="remove-proof-btn" class="btn btn-sm btn-secondary" style="position: absolute; top: 6px; right: 6px; padding: 2px 8px; font-size: 11px;">Remove</button>
+              </div>
+              <input type="file" id="proofImage" name="proofImage" accept="image/jpeg,image/png,image/webp" style="display: none;" />
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div style="margin-top: 28px; display: flex; gap: 12px; justify-content: flex-end; align-items: center; border-top: 1px solid var(--border); padding-top: 20px;">
+            <a href="items.html" class="btn btn-secondary">Cancel</a>
+            <button type="submit" id="submit-claim-btn" class="btn btn-primary">
+              Submit Claim
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // 1. Guard route & navbar
+    requireAuth();
+    renderNavbar();
+
+    // Set max date for lostDate
+    const lostDateInput = document.getElementById("lostDate");
+    if (lostDateInput) {
+      lostDateInput.max = new Date().toISOString().split("T")[0];
+    }
+
+    const stateContainer = document.getElementById("state-container");
+    const stateTitle = document.getElementById("state-title");
+    const stateDesc = document.getElementById("state-desc");
+    const stateBtn = document.getElementById("state-btn");
+    const claimLayout = document.getElementById("claim-layout");
+    const successContainer = document.getElementById("success-container");
+
+    function showState(title, desc, btnText, btnHref) {
+      stateTitle.textContent = title;
+      stateDesc.textContent = desc;
+      stateBtn.textContent = btnText;
+      stateBtn.href = btnHref;
+      stateContainer.style.display = "block";
+      claimLayout.style.display = "none";
+      successContainer.style.display = "none";
+    }
+
+    // 2. Read query parameter
+    const params = new URLSearchParams(window.location.search);
+    const itemId = params.get("itemId") || params.get("id");
+
+    if (!itemId) {
+      showState("No Item Selected", "Please select an item from the catalog before filing an ownership claim.", "Browse Items", "items.html");
+    } else {
+      loadItemDetails(itemId);
+    }
+
+    async function loadItemDetails(id) {
+      try {
+        const res = await fetchAPI(`/items/${id}`);
+        if (!res.ok || !res.data || !res.data.item) {
+          showState("Item Not Found", "The requested item listing may have been resolved, archived, or removed.", "Back to Catalog", "items.html");
+          return;
+        }
+
+        const item = res.data.item;
+        const currentUser = getUser();
+
+        // Check if item is a lost item
+        if (item.type !== "found") {
+          showState(
+            "Cannot Claim a Lost Item",
+            "This item is registered as a Lost Item report. You can only file claims for items reported as Found.",
+            "Back to Catalog",
+            "items.html"
+          );
+          return;
+        }
+
+        // Check if user is trying to claim their own item
+        const reporterId = item.reporterID?._id || item.reporterID || item.userId;
+        const currentUserId = currentUser?._id || currentUser?.id;
+        if (currentUser && reporterId && currentUserId && String(currentUserId) === String(reporterId)) {
+          showState(
+            "Cannot Claim Own Item",
+            "This item was posted by you. You cannot file a claim on your own listing.",
+            "Go to Dashboard",
+            "dashboard.html"
+          );
+          return;
+        }
+
+        // Check if item is already claimed or resolved
+        if (item.status !== "active" && item.status !== "approved") {
+          showState(
+            "Item No Longer Available",
+            `This item is currently marked as ${item.status} and cannot receive new claims.`,
+            "Browse Items",
+            "items.html"
+          );
+          return;
+        }
+
+        // Populate Left Column
+        document.getElementById("itemId").value = item._id;
+        document.getElementById("item-title").textContent = item.title;
+        document.getElementById("item-location").textContent = item.location;
+        document.getElementById("item-category").textContent = item.category;
+        document.getElementById("item-date").textContent = new Date(item.date || item.createdAt).toLocaleDateString();
+        document.getElementById("item-desc").textContent = item.description;
+
+        const typeBadge = document.getElementById("item-type-badge");
+        typeBadge.textContent = item.type.toUpperCase();
+        typeBadge.className = `badge ${item.type === "lost" ? "badge-lost" : "badge-found"}`;
+
+        const imgBox = document.getElementById("item-image-box");
+        if (item.image) {
+          imgBox.innerHTML = `<img src="${getUploadUrl(item.image)}" alt="${escapeHtml(item.title)}">`;
+        } else {
+          imgBox.innerHTML = `
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--slate-400);">
+              <rect x="3" y="3" width="18" height="18" rx="2"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="m21 15-5-5L5 21"/>
+            </svg>`;
+        }
+
+        claimLayout.style.display = "grid";
+        updateScore();
+      } catch (e) {
+        showToast("Error loading item details.", "error");
+      }
+    }
+
+    // 3. Dynamic Verification Score calculation
+    const descInput = document.getElementById("description");
+    const featureInput = document.getElementById("uniqueFeature");
+    const phoneInput = document.getElementById("contactPhone");
+    const proofInput = document.getElementById("proofImage");
+    const scoreVal = document.getElementById("score-val");
+    const scoreFill = document.getElementById("score-fill");
+
+    function updateScore() {
+      let score = 0;
+      const descVal = descInput.value.trim();
+      const featureVal = featureInput.value.trim();
+      const phoneVal = phoneInput.value.trim();
+      const dateVal = lostDateInput.value;
+      const hasProof = proofInput.files && proofInput.files.length > 0;
+
+      if (descVal.length >= 10) score += 30;
+      else if (descVal.length > 0) score += 10;
+
+      if (featureVal.length >= 5) score += 35;
+      else if (featureVal.length > 0) score += 10;
+
+      if (dateVal) score += 15;
+      if (phoneVal && /^\d{10}$/.test(phoneVal)) score += 10;
+      if (hasProof) score += 10;
+
+      scoreVal.textContent = `${score}%`;
+      scoreFill.style.width = `${score}%`;
+      if (score >= 80) {
+        scoreFill.style.backgroundColor = "var(--green-600)";
+      } else if (score >= 50) {
+        scoreFill.style.backgroundColor = "var(--primary)";
+      } else {
+        scoreFill.style.backgroundColor = "var(--slate-400)";
+      }
+    }
+
+    descInput.addEventListener("input", updateScore);
+    featureInput.addEventListener("input", updateScore);
+    phoneInput.addEventListener("input", updateScore);
+    lostDateInput.addEventListener("change", updateScore);
+
+    // 4. Setup proof image upload & preview
+    const proofDropzone = document.getElementById("proof-dropzone");
+    const proofPreviewWrap = document.getElementById("proof-preview-wrap");
+    const proofPreview = document.getElementById("proof-preview");
+    const proofPrompt = document.getElementById("proof-prompt");
+    const removeProofBtn = document.getElementById("remove-proof-btn");
+
+    proofDropzone.addEventListener("click", (e) => {
+      if (e.target !== removeProofBtn) proofInput.click();
+    });
+
+    proofInput.addEventListener("change", () => {
+      const file = proofInput.files[0];
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Proof image must be under 5MB", "error");
+        proofInput.value = "";
+        updateScore();
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        proofPreview.src = ev.target.result;
+        proofPrompt.style.display = "none";
+        proofPreviewWrap.style.display = "block";
+        updateScore();
+      };
+      reader.readAsDataURL(file);
+    });
+
+    removeProofBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      proofInput.value = "";
+      proofPreviewWrap.style.display = "none";
+      proofPrompt.style.display = "block";
+      updateScore();
+    });
+
+    // 5. Handle claim form submission
+    const claimForm = document.getElementById("claim-form");
+    const submitClaimBtn = document.getElementById("submit-claim-btn");
+
+    claimForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const desc = descInput.value.trim();
+      const feature = featureInput.value.trim();
+
+      if (desc.length < 10) {
+        showToast("Please provide at least 10 characters explaining ownership.", "error");
+        descInput.focus();
+        return;
+      }
+
+      if (feature.length < 5) {
+        showToast("Please provide a distinguishing feature of at least 5 characters.", "error");
+        featureInput.focus();
+        return;
+      }
+
+      submitClaimBtn.disabled = true;
+      submitClaimBtn.textContent = "Submitting...";
+
+      try {
+        const formData = new FormData(claimForm);
+
+        const res = await fetchAPI("/claims", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok && res.data && res.data.success) {
+          claimLayout.style.display = "none";
+          successContainer.style.display = "block";
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        } else {
+          showToast(res.data?.message || "Failed to submit claim.", "error");
+          submitClaimBtn.disabled = false;
+          submitClaimBtn.textContent = "Submit Claim";
+        }
+      } catch (err) {
+        showToast("Network error. Could not submit claim.", "error");
+        submitClaimBtn.disabled = false;
+        submitClaimBtn.textContent = "Submit Claim";
+      }
+    });
+  </script>
+</body>
+</html>

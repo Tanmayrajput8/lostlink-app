@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register – LostLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="auth-page">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">Lost<span>Link</span></a>
+      <div id="nav-links" class="nav-links">
+        <a href="items.html" class="nav-link">Browse Items</a>
+      </div>
+      <div id="nav-right" class="nav-right">
+        <a href="login.html" class="btn btn-sm btn-ghost">Login</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">Lost<span>Link</span></div>
+        <h1>Create Account</h1>
+        <p>Join LostLink to report, claim, and recover lost campus items</p>
+      </div>
+
+      <div id="register-alert" class="alert alert-error" style="display: none;"></div>
+
+      <form id="register-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="name">Full Name *</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            class="form-input"
+            placeholder="e.g. Jane Doe"
+            required
+            data-validate="name"
+            autocomplete="name"
+          />
+          <small style="color: var(--slate-400); font-size: 11px;">Letters and spaces only (2-50 characters)</small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="email">Campus Email *</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="student@campus.edu"
+            required
+            data-validate="email"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number (Optional)</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            class="form-input"
+            placeholder="10-digit mobile number"
+            data-validate="phone"
+            autocomplete="tel"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password *</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="Min. 8 chars with Aa, 1, and #"
+            required
+            data-validate="password"
+            autocomplete="new-password"
+          />
+          <small style="color: var(--slate-400); font-size: 11px;">Must contain uppercase, lowercase, number, and special character</small>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary btn-full btn-lg" style="margin-top: 10px;">
+          Create Account
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account? <a href="login.html">Sign in</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // If already authenticated, redirect based on role
+      if (isAuthenticated()) {
+        const u = getUser();
+        window.location.href = (u && u.role === "admin") ? "dashboard.html" : "dashboard.html";
+        return;
+      }
+
+      const form = document.getElementById("register-form");
+      const submitBtn = document.getElementById("submit-btn");
+      const alertDiv = document.getElementById("register-alert");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        alertDiv.style.display = "none";
+
+        if (!validateForm(form)) return;
+
+        const name = document.getElementById("name").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const phone = document.getElementById("phone").value.trim();
+        const password = document.getElementById("password").value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="spinner"></span> Creating account...`;
+
+        try {
+          const res = await fetchAPI("/auth/register", {
+            method: "POST",
+            body: { name, email, phone, password },
+          });
+
+          if (res.ok && res.data && res.data.token) {
+            saveAuth(res.data.token, res.data.user);
+            showToast("Account created successfully!", "success");
+            setTimeout(() => {
+              window.location.href = "dashboard.html";
+            }, 800);
+          } else {
+            alertDiv.textContent = res.data.message || "Failed to register. Please check your inputs.";
+            alertDiv.style.display = "flex";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Create Account";
+          }
+        } catch (err) {
+          alertDiv.textContent = "Network error connecting to server.";
+          alertDiv.style.display = "flex";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Create Account";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

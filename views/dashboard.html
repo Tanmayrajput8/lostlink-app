@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – LostLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .dash-tabs {
+      display: flex;
+      gap: 8px;
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 24px;
+      overflow-x: auto;
+      white-space: nowrap;
+    }
+    .dash-tab-btn {
+      background: none;
+      border: none;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -2px;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dash-tab-btn:hover { color: var(--primary); }
+    .dash-tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .stat-card-num {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--slate-900);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .stat-card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .table-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 48px 16px;
+      color: var(--text-muted);
+    }
+    .badge-returned {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+    .badge-completed {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">Lost<span>Link</span></a>
+      <div id="nav-links" class="nav-links">
+        <a href="items.html" class="nav-link">Browse Items</a>
+        <a href="report-lost.html" class="nav-link">Report Lost</a>
+        <a href="report-found.html" class="nav-link">Report Found</a>
+      </div>
+      <div id="nav-right" class="nav-right"></div>
+    </div>
+  </nav>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <main class="container" style="padding: 32px 20px 80px;">
+    <!-- User Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; margin-bottom: 28px;">
+      <div>
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+          <h1 id="user-greeting" style="font-size: 24px; font-weight: 700; color: var(--slate-900); margin: 0;">My Dashboard</h1>
+          <span id="role-badge" class="badge badge-secondary" style="font-size: 11px;">User</span>
+        </div>
+        <p id="user-email" style="color: var(--text-muted); font-size: 14px; margin: 0;"></p>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <a href="report-lost.html" class="btn btn-sm btn-secondary">Report Lost</a>
+        <a href="report-found.html" class="btn btn-sm btn-primary">Report Found</a>
+      </div>
+    </div>
+
+    <!-- Admin Stats Banner -->
+    <div id="admin-banner" class="card" style="display: none; background: #0f172a; color: white; padding: 24px; margin-bottom: 32px; border: 1px solid #1e293b;">
+      <div style="margin-bottom: 16px;">
+        <span class="badge" style="background: rgba(99,102,241,0.2); color: #a5b4fc; margin-bottom: 6px;">Administrator Access</span>
+        <h2 style="font-size: 18px; color: white; margin: 0; font-weight: 700;">Lost &amp; Found Control Center</h2>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px;">
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08);">
+          <div id="admin-stat-total" class="stat-card-num" style="color: white;">-</div>
+          <div class="stat-card-label" style="color: #94a3b8;">Total Items</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08);">
+          <div id="admin-stat-active" class="stat-card-num" style="color: #38bdf8;">-</div>
+          <div class="stat-card-label" style="color: #94a3b8;">Active Listings</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08);">
+          <div id="admin-stat-pending-items" class="stat-card-num" style="color: #fbbf24;">-</div>
+          <div class="stat-card-label" style="color: #94a3b8;">Pending Reports</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08);">
+          <div id="admin-stat-pending-claims" class="stat-card-num" style="color: #f472b6;">-</div>
+          <div class="stat-card-label" style="color: #94a3b8;">Pending Claims</div>
+        </div>
+        <div style="background: rgba(255,255,255,0.05); padding: 14px; border-radius: var(--radius-sm); border: 1px solid rgba(255,255,255,0.08);">
+          <div id="admin-stat-resolved" class="stat-card-num" style="color: #4ade80;">-</div>
+          <div class="stat-card-label" style="color: #94a3b8;">Items Returned</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Stats Bar -->
+    <div id="student-stats-bar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px;">
+      <div class="card" style="padding: 16px;">
+        <div id="stat-my-reports" class="stat-card-num">0</div>
+        <div class="stat-card-label">My Reports</div>
+      </div>
+      <div class="card" style="padding: 16px;">
+        <div id="stat-my-active" class="stat-card-num">0</div>
+        <div class="stat-card-label">Active Listings</div>
+      </div>
+      <div class="card" style="padding: 16px;">
+        <div id="stat-my-pending" class="stat-card-num">0</div>
+        <div class="stat-card-label">Pending Approval</div>
+      </div>
+      <div class="card" style="padding: 16px;">
+        <div id="stat-my-claims" class="stat-card-num">0</div>
+        <div class="stat-card-label">Claims Submitted</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div id="dash-tabs" class="dash-tabs">
+      <button class="dash-tab-btn active" data-tab="my-items-tab"> Reported Items</button>
+      <button class="dash-tab-btn" data-tab="my-claims-tab"> Claims</button>
+      <!-- Admin only tabs -->
+      <button id="admin-pending-tab-btn" class="dash-tab-btn" data-tab="admin-pending-tab" style="display: none;">
+        Pending Reports
+        <span id="pending-reports-badge" class="badge" style="font-size: 10px; display: none; background: var(--amber-500); color: white;">0</span>
+      </button>
+      <button id="admin-claims-tab-btn" class="dash-tab-btn" data-tab="admin-claims-tab" style="display: none;">
+        Claims Review
+        <span id="pending-claims-badge" class="badge badge-lost" style="font-size: 10px; display: none;">0</span>
+      </button>
+      <button id="admin-items-tab-btn" class="dash-tab-btn" data-tab="admin-items-tab" style="display: none;">
+        All Items
+      </button>
+    </div>
+
+    <!-- Tab 1: My Reported Items -->
+    <div id="my-items-tab" class="tab-pane">
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+          <table class="table" style="margin: 0; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--slate-50); border-bottom: 1px solid var(--border); text-align: left;">
+                <th style="padding: 12px 16px;">Item</th>
+                <th style="padding: 12px 16px;">Type</th>
+                <th style="padding: 12px 16px;">Category</th>
+                <th style="padding: 12px 16px;">Location</th>
+                <th style="padding: 12px 16px;">Date</th>
+                <th style="padding: 12px 16px;">Status</th>
+                <th style="padding: 12px 16px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="my-items-tbody">
+              <tr><td colspan="7" class="empty-state">Loading your reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 2: My Claims -->
+    <div id="my-claims-tab" class="tab-pane" style="display: none;">
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-size: 18px; font-weight: 700; color: var(--slate-900); margin: 0 0 4px;">My Claims</h2>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin: 0;">Track the status of your submitted ownership claims.</p>
+      </div>
+
+      <!-- Summary Cards -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
+        <div class="card" style="padding: 14px;">
+          <div id="claims-sum-total" style="font-size: 22px; font-weight: 700; color: var(--slate-900);">0</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Total</div>
+        </div>
+        <div class="card" style="padding: 14px;">
+          <div id="claims-sum-pending" style="font-size: 22px; font-weight: 700; color: var(--amber-500);">0</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Pending</div>
+        </div>
+        <div class="card" style="padding: 14px;">
+          <div id="claims-sum-approved" style="font-size: 22px; font-weight: 700; color: var(--green-600);">0</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Approved</div>
+        </div>
+        <div class="card" style="padding: 14px;">
+          <div id="claims-sum-rejected" style="font-size: 22px; font-weight: 700; color: var(--red-500);">0</div>
+          <div style="font-size: 11px; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Rejected</div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div class="table-responsive">
+          <table class="table" style="margin: 0; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--slate-50); border-bottom: 1px solid var(--border); text-align: left;">
+                <th style="padding: 12px 16px;">Claimed Item</th>
+                <th style="padding: 12px 16px;">Category</th>
+                <th style="padding: 12px 16px;">Location</th>
+                <th style="padding: 12px 16px;">Submitted</th>
+                <th style="padding: 12px 16px;">Status</th>
+                <th style="padding: 12px 16px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="my-claims-tbody">
+              <tr><td colspan="6" class="empty-state">Loading your claims...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 3 (Admin): Pending Item Reports -->
+    <div id="admin-pending-tab" class="tab-pane" style="display: none;">
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--slate-50);">
+          <h3 style="font-size: 15px; margin: 0; font-weight: 700;">Pending Item Reports</h3>
+          <span style="font-size: 13px; color: var(--text-muted);">Review and approve or reject submitted reports.</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table" style="margin: 0; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+                <th style="padding: 12px 16px;">Item</th>
+                <th style="padding: 12px 16px;">Type</th>
+                <th style="padding: 12px 16px;">Category</th>
+                <th style="padding: 12px 16px;">Location</th>
+                <th style="padding: 12px 16px;">Reporter</th>
+                <th style="padding: 12px 16px;">Submitted</th>
+                <th style="padding: 12px 16px; text-align: right;">Moderation</th>
+              </tr>
+            </thead>
+            <tbody id="admin-pending-tbody">
+              <tr><td colspan="7" class="empty-state">Loading pending reports...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 4 (Admin): Claims Review -->
+    <div id="admin-claims-tab" class="tab-pane" style="display: none;">
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--slate-50);">
+          <h3 style="font-size: 15px; margin: 0; font-weight: 700;">Claims Review Queue</h3>
+          <span style="font-size: 13px; color: var(--text-muted);">Verify ownership details before approving. After approving, mark item returned once physically handed over.</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table" style="margin: 0; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--border); text-align: left;">
+                <th style="padding: 12px 16px;">Claimant</th>
+                <th style="padding: 12px 16px;">Found Item</th>
+                <th style="padding: 12px 16px;">Ownership Details</th>
+                <th style="padding: 12px 16px;">Date Filed</th>
+                <th style="padding: 12px 16px;">Status</th>
+                <th style="padding: 12px 16px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-claims-tbody">
+              <tr><td colspan="6" class="empty-state">Loading claims...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tab 5 (Admin): All Items -->
+    <div id="admin-items-tab" class="tab-pane" style="display: none;">
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--slate-50);">
+          <h3 style="font-size: 15px; margin: 0; font-weight: 700;">All Campus Items</h3>
+        </div>
+        <div class="table-responsive">
+          <table class="table" style="margin: 0; width: 100%; border-collapse: collapse;">
+            <thead>
+              <tr style="background: var(--slate-50); border-bottom: 1px solid var(--border); text-align: left;">
+                <th style="padding: 12px 16px;">Item</th>
+                <th style="padding: 12px 16px;">Type</th>
+                <th style="padding: 12px 16px;">Category</th>
+                <th style="padding: 12px 16px;">Reporter</th>
+                <th style="padding: 12px 16px;">Status</th>
+                <th style="padding: 12px 16px;">Date</th>
+                <th style="padding: 12px 16px; text-align: right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-items-tbody">
+              <tr><td colspan="7" class="empty-state">Loading all items...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Claim Detail Modal -->
+  <div id="claim-detail-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="modal-content card" style="max-width: 540px; width: 90%; background: white; border-radius: var(--radius-md); overflow: hidden; max-height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 id="cdm-title" style="font-size: 16px; margin: 0; font-weight: 700;">Claim Details</h3>
+        <button id="close-claim-detail-btn" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);">&#x2715;</button>
+      </div>
+      <div id="cdm-body" style="padding: 20px; overflow-y: auto; font-size: 13.5px; line-height: 1.6;"></div>
+      <div style="padding: 12px 20px; border-top: 1px solid var(--border); background: var(--slate-50); display: flex; justify-content: flex-end;">
+        <button onclick="document.getElementById('claim-detail-modal').style.display='none'" class="btn btn-secondary btn-sm">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Rejection Modal -->
+  <div id="reject-modal" class="modal-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 2000; align-items: center; justify-content: center;">
+    <div class="modal-content card" style="max-width: 460px; width: 90%; background: white; border-radius: var(--radius-md); overflow: hidden;">
+      <div class="modal-header" style="padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
+        <h3 style="font-size: 16px; margin: 0; font-weight: 700;">Reject Claim</h3>
+        <button id="close-reject-modal-btn" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-muted);">&#x2715;</button>
+      </div>
+      <form id="reject-form" style="padding: 20px;">
+        <input type="hidden" id="reject-claim-id" value="" />
+        <div class="form-group">
+          <label class="form-label required" for="reject-reason">Reason for Rejection</label>
+          <textarea id="reject-reason" name="reason" class="form-textarea" rows="3"
+            placeholder="e.g. Provided details do not match the item, insufficient proof of ownership."
+            required></textarea>
+          <span style="font-size: 12px; color: var(--text-muted); display: block; margin-top: 4px;">This reason will be shown to the claimant.</span>
+        </div>
+        <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+          <button type="button" id="cancel-reject-btn" class="btn btn-secondary btn-sm">Cancel</button>
+          <button type="submit" class="btn btn-danger btn-sm">Confirm Rejection</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    requireAuth();
+    renderNavbar();
+
+    const currentUser = getUser();
+    if (currentUser) {
+      document.getElementById("user-greeting").textContent = `Welcome, ${currentUser.name || "User"}`;
+      document.getElementById("user-email").textContent = currentUser.email;
+
+      const roleBadge = document.getElementById("role-badge");
+      if (currentUser.role === "admin") {
+        roleBadge.textContent = "Administrator";
+        roleBadge.className = "badge badge-primary";
+        document.getElementById("admin-banner").style.display = "block";
+        document.getElementById("admin-pending-tab-btn").style.display = "inline-flex";
+        document.getElementById("admin-claims-tab-btn").style.display = "inline-flex";
+        document.getElementById("admin-items-tab-btn").style.display = "inline-flex";
+        document.getElementById("student-stats-bar").style.display = "none";
+        loadAdminStats();
+      }
+    }
+
+    // Status badge helper — only 4 valid item statuses
+    function getStatusBadge(status) {
+      switch (status) {
+        case "pending":   return `<span class="badge badge-pending">PENDING</span>`;
+        case "approved":  return `<span class="badge badge-active">APPROVED</span>`;
+        case "rejected":  return `<span class="badge badge-rejected">REJECTED</span>`;
+        case "returned":  return `<span class="badge badge-returned">RETURNED</span>`;
+        default:          return `<span class="badge badge-secondary">${(status || "UNKNOWN").toUpperCase()}</span>`;
+      }
+    }
+
+    // Claim status badge helper
+    function getClaimBadge(status) {
+      switch (status) {
+        case "pending":   return `<span class="badge badge-pending">PENDING</span>`;
+        case "approved":  return `<span class="badge badge-active">APPROVED</span>`;
+        case "rejected":  return `<span class="badge badge-rejected">REJECTED</span>`;
+        case "completed": return `<span class="badge badge-returned">COMPLETED</span>`;
+        case "withdrawn": return `<span class="badge badge-secondary">WITHDRAWN</span>`;
+        default:          return `<span class="badge badge-secondary">${(status || "UNKNOWN").toUpperCase()}</span>`;
+      }
+    }
+
+    // Tab Navigation
+    const tabBtns = document.querySelectorAll(".dash-tab-btn");
+    const tabPanes = document.querySelectorAll(".tab-pane");
+
+    tabBtns.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const targetId = btn.getAttribute("data-tab");
+        tabBtns.forEach((b) => b.classList.remove("active"));
+        tabPanes.forEach((p) => (p.style.display = "none"));
+        btn.classList.add("active");
+        const pane = document.getElementById(targetId);
+        if (pane) pane.style.display = "block";
+
+        if (targetId === "my-items-tab")     loadMyItems();
+        if (targetId === "my-claims-tab")    loadMyClaims();
+        if (targetId === "admin-pending-tab") loadAdminPendingReports();
+        if (targetId === "admin-claims-tab") loadAdminClaims();
+        if (targetId === "admin-items-tab")  loadAdminItems();
+      });
+    });
+
+    // Hash routing
+    if (window.location.hash === "#claims") {
+      document.querySelector('[data-tab="my-claims-tab"]')?.click();
+    } else if (window.location.hash === "#pending" && currentUser?.role === "admin") {
+      document.querySelector('[data-tab="admin-pending-tab"]')?.click();
+    } else {
+      loadMyItems();
+      loadMyClaims();
+    }
+
+    // ── Tab 1: My Reported Items ───────────────────────────────────────────
+    async function loadMyItems() {
+      const tbody = document.getElementById("my-items-tbody");
+      try {
+        const res = await fetchAPI("/items/mine");
+        if (res.ok && res.data && Array.isArray(res.data.items)) {
+          const items = res.data.items;
+
+          const activeCount = items.filter(i => i.status === "approved").length;
+          const pendingCount = items.filter(i => i.status === "pending").length;
+
+          const myRep = document.getElementById("stat-my-reports");
+          const myAct = document.getElementById("stat-my-active");
+          const myPen = document.getElementById("stat-my-pending");
+          if (myRep) myRep.textContent = items.length;
+          if (myAct) myAct.textContent = activeCount;
+          if (myPen) myPen.textContent = pendingCount;
+
+          if (items.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="7" class="empty-state">
+                  <p style="margin-bottom: 8px;">You have not reported any items yet.</p>
+                  <a href="report-lost.html" class="btn btn-sm btn-primary">Report an Item</a>
+                </td>
+              </tr>`;
+            return;
+          }
+
+          tbody.innerHTML = items.map((item) => {
+            const typeClass = item.type === "lost" ? "badge-lost" : "badge-found";
+            const dateStr = new Date(item.date || item.createdAt).toLocaleDateString();
+            return `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px 16px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); overflow: hidden; background: var(--slate-100); flex-shrink: 0; border: 1px solid var(--border);">
+                      ${item.image
+                        ? `<img src="${getUploadUrl(item.image)}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 100%; object-fit: cover;">`
+                        : `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 11px; color: var(--slate-400);">No Img</div>`
+                      }
+                    </div>
+                    <div>
+                      <div style="font-weight: 600; color: var(--slate-900);">${escapeHtml(item.title)}</div>
+                      <div style="font-size: 12px; color: var(--text-muted);">${truncateText(item.description, 40)}</div>
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 12px 16px;"><span class="badge ${typeClass}">${item.type.toUpperCase()}</span></td>
+                <td style="padding: 12px 16px;">${escapeHtml(item.category)}</td>
+                <td style="padding: 12px 16px;">${escapeHtml(item.location)}</td>
+                <td style="padding: 12px 16px;">${dateStr}</td>
+                <td style="padding: 12px 16px;">${getStatusBadge(item.status)}</td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div class="table-actions" style="justify-content: flex-end;">
+                    ${item.status === "pending"
+                      ? `<span style="font-size: 12px; color: var(--amber-600); font-weight: 500;">Under Review</span>`
+                      : ""
+                    }
+                    <button onclick="deleteItem('${item._id}')" class="btn btn-sm btn-ghost" style="font-size: 12px; color: var(--rose-600);">Delete</button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join("");
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Failed to load your reports.</td></tr>`;
+        }
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error connecting to server.</td></tr>`;
+      }
+    }
+
+    // ── Tab 2: My Claims ──────────────────────────────────────────────────
+    let userClaimsList = [];
+
+    async function loadMyClaims() {
+      const tbody = document.getElementById("my-claims-tbody");
+      tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Loading your claims...</td></tr>`;
+      try {
+        const res = await fetchAPI("/claims/mine");
+        if (res.ok && res.data && Array.isArray(res.data.claims)) {
+          const claims = res.data.claims;
+          userClaimsList = claims;
+
+          const claimsStat = document.getElementById("stat-my-claims");
+          if (claimsStat) claimsStat.textContent = claims.length;
+
+          document.getElementById("claims-sum-total").textContent = claims.length;
+          document.getElementById("claims-sum-pending").textContent = claims.filter(c => c.status === "pending").length;
+          document.getElementById("claims-sum-approved").textContent = claims.filter(c => c.status === "approved" || c.status === "completed").length;
+          document.getElementById("claims-sum-rejected").textContent = claims.filter(c => c.status === "rejected").length;
+
+          if (claims.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="6" class="empty-state">
+                  <h3 style="font-size: 16px; font-weight: 600; color: var(--slate-800); margin-bottom: 4px;">No claims submitted yet</h3>
+                  <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">Browse found items and submit a claim if you recognize your belongings.</p>
+                  <a href="items.html" class="btn btn-sm btn-primary">Browse Items</a>
+                </td>
+              </tr>`;
+            return;
+          }
+
+          tbody.innerHTML = claims.map((c) => {
+            const itemTitle = c.itemId?.title || c.itemSnapshot?.title || "Item Listing";
+            const itemCat   = c.itemId?.category || c.itemSnapshot?.category || "General";
+            const itemLoc   = c.itemId?.location || c.itemSnapshot?.location || "—";
+            const dateStr   = new Date(c.createdAt).toLocaleDateString();
+            return `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px 16px;">
+                  <strong>${escapeHtml(itemTitle)}</strong>
+                </td>
+                <td style="padding: 12px 16px; font-size: 13px;">${escapeHtml(itemCat)}</td>
+                <td style="padding: 12px 16px; font-size: 13px;">${escapeHtml(itemLoc)}</td>
+                <td style="padding: 12px 16px; font-size: 13px;">${dateStr}</td>
+                <td style="padding: 12px 16px;">${getClaimBadge(c.status)}</td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div class="table-actions" style="justify-content: flex-end;">
+                    <button onclick="openClaimDetailModal('${c._id}')" class="btn btn-sm btn-ghost" style="font-size: 12px;">View</button>
+                    ${c.status === "pending"
+                      ? `<button onclick="withdrawClaim('${c._id}')" class="btn btn-sm btn-ghost" style="color: var(--text-muted); font-size: 12px;">Withdraw</button>`
+                      : ""
+                    }
+                  </div>
+                </td>
+              </tr>`;
+          }).join("");
+        } else {
+          tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><p>Unable to load claims.</p><button onclick="loadMyClaims()" class="btn btn-sm btn-secondary" style="margin-top: 8px;">Retry</button></td></tr>`;
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state"><p>Error connecting to server.</p><button onclick="loadMyClaims()" class="btn btn-sm btn-secondary" style="margin-top: 8px;">Retry</button></td></tr>`;
+      }
+    }
+
+    function openClaimDetailModal(claimId) {
+      const claim = userClaimsList.find(c => c._id === claimId);
+      if (!claim) return;
+      const itemTitle = claim.itemId?.title || claim.itemSnapshot?.title || "Item";
+      const itemCat   = claim.itemId?.category || claim.itemSnapshot?.category || "—";
+      const itemLoc   = claim.itemId?.location || claim.itemSnapshot?.location || "—";
+
+      document.getElementById("cdm-title").textContent = `Claim: ${itemTitle}`;
+      document.getElementById("cdm-body").innerHTML = `
+        <div style="background: var(--slate-50); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 12px 16px; margin-bottom: 16px;">
+          <div style="font-weight: 700; color: var(--slate-900); font-size: 15px; margin-bottom: 4px;">${escapeHtml(itemTitle)}</div>
+          <div style="font-size: 12px; color: var(--text-muted);">
+            Category: ${escapeHtml(itemCat)} &bull; Location: ${escapeHtml(itemLoc)}
+          </div>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 4px;">Ownership Details</div>
+          <p style="margin: 0; color: var(--slate-700); background: white; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px;">${escapeHtml(claim.description)}</p>
+        </div>
+        <div style="margin-bottom: 14px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 4px;">Distinguishing Feature</div>
+          <p style="margin: 0; color: var(--slate-700); background: white; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 13px;">${escapeHtml(claim.uniqueFeature)}</p>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 2px;">Date Lost</div>
+            <div style="color: var(--slate-800);">${claim.lostDate ? new Date(claim.lostDate).toLocaleDateString() : "Not specified"}</div>
+          </div>
+          <div>
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 2px;">Contact Phone</div>
+            <div style="color: var(--slate-800);">${claim.contactPhone ? escapeHtml(claim.contactPhone) : "Not provided"}</div>
+          </div>
+        </div>
+        ${claim.proofImage ? `
+          <div style="margin-bottom: 14px;">
+            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 4px;">Proof Document</div>
+            <a href="${getUploadUrl(claim.proofImage)}" target="_blank" class="btn btn-sm btn-secondary" style="font-size: 12px;">Open Proof Attachment</a>
+          </div>
+        ` : ""}
+        <div style="border-top: 1px solid var(--border); padding-top: 12px;">
+          <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--slate-400); margin-bottom: 4px;">Current Status</div>
+          ${getClaimBadge(claim.status)}
+          ${claim.rejectionReason ? `
+            <div style="margin-top: 6px; font-size: 12.5px; color: var(--rose-600); font-weight: 500;">
+              Rejection Reason: ${escapeHtml(claim.rejectionReason)}
+            </div>
+          ` : ""}
+        </div>
+      `;
+      document.getElementById("claim-detail-modal").style.display = "flex";
+    }
+
+    document.getElementById("close-claim-detail-btn").addEventListener("click", () => {
+      document.getElementById("claim-detail-modal").style.display = "none";
+    });
+
+    // ── Admin: Load Stats ─────────────────────────────────────────────────
+    async function loadAdminStats() {
+      try {
+        const res = await fetchAPI("/items/stats/summary");
+        if (res.ok && res.data && res.data.stats) {
+          const s = res.data.stats;
+          document.getElementById("admin-stat-total").textContent = s.totalItems || 0;
+          document.getElementById("admin-stat-active").textContent = s.activeCount || 0;
+          document.getElementById("admin-stat-pending-items").textContent = s.pendingReports || 0;
+          document.getElementById("admin-stat-pending-claims").textContent = s.pendingClaims || 0;
+          document.getElementById("admin-stat-resolved").textContent = s.returnedCount || 0;
+
+          const claimsBadge = document.getElementById("pending-claims-badge");
+          if (s.pendingClaims > 0) {
+            claimsBadge.textContent = s.pendingClaims;
+            claimsBadge.style.display = "inline-block";
+          } else {
+            claimsBadge.style.display = "none";
+          }
+          const reportsBadge = document.getElementById("pending-reports-badge");
+          if (s.pendingReports > 0) {
+            reportsBadge.textContent = s.pendingReports;
+            reportsBadge.style.display = "inline-block";
+          } else {
+            reportsBadge.style.display = "none";
+          }
+        }
+      } catch (e) {}
+    }
+
+    // ── Admin: Pending Reports ────────────────────────────────────────────
+    async function loadAdminPendingReports() {
+      const tbody = document.getElementById("admin-pending-tbody");
+      try {
+        const res = await fetchAPI("/items/admin/pending");
+        if (res.ok && res.data && Array.isArray(res.data.items)) {
+          const items = res.data.items;
+          if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No pending item reports.</td></tr>`;
+            return;
+          }
+          tbody.innerHTML = items.map((item) => {
+            const typeClass = item.type === "lost" ? "badge-lost" : "badge-found";
+            const dateStr = new Date(item.createdAt).toLocaleDateString();
+            return `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px 16px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <div style="width: 40px; height: 40px; border-radius: var(--radius-sm); overflow: hidden; background: var(--slate-100); flex-shrink: 0; border: 1px solid var(--border);">
+                      ${item.image
+                        ? `<img src="${getUploadUrl(item.image)}" alt="${escapeHtml(item.title)}" style="width: 100%; height: 100%; object-fit: cover;">`
+                        : `<div style="display: flex; align-items: center; justify-content: center; height: 100%; font-size: 11px; color: var(--slate-400);">No Img</div>`
+                      }
+                    </div>
+                    <div>
+                      <strong>${escapeHtml(item.title)}</strong>
+                      <div style="font-size: 12px; color: var(--text-muted);">${truncateText(item.description, 40)}</div>
+                      ${item.linkedLostItem ? `<div style="font-size: 11px; color: var(--primary); margin-top: 2px;">Linked to a Lost Report</div>` : ""}
+                    </div>
+                  </div>
+                </td>
+                <td style="padding: 12px 16px;"><span class="badge ${typeClass}">${item.type.toUpperCase()}</span></td>
+                <td style="padding: 12px 16px;">${escapeHtml(item.category)}</td>
+                <td style="padding: 12px 16px;">${escapeHtml(item.location)}</td>
+                <td style="padding: 12px 16px;">
+                  <strong>${escapeHtml(item.reporterName || "Unknown")}</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(item.reporterEmail || "")}</div>
+                </td>
+                <td style="padding: 12px 16px;">${dateStr}</td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div class="table-actions" style="justify-content: flex-end;">
+                    <button onclick="approveItemReport('${item._id}')" class="btn btn-sm btn-success" style="font-size: 12px;">Approve</button>
+                    <button onclick="rejectItemReport('${item._id}')" class="btn btn-sm btn-danger" style="font-size: 12px;">Reject</button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join("");
+        } else {
+          tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error loading pending reports.</td></tr>`;
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error connecting to server.</td></tr>`;
+      }
+    }
+
+    async function approveItemReport(id) {
+      if (!confirm("Approve and publish this report to the public catalog?")) return;
+      const res = await fetchAPI(`/items/${id}/approve`, { method: "PUT" });
+      if (res.ok) {
+        showToast("Item report approved and published.", "success");
+        loadAdminPendingReports();
+        loadAdminStats();
+      } else {
+        showToast(res.data?.message || "Could not approve item", "error");
+      }
+    }
+
+    async function rejectItemReport(id) {
+      if (!confirm("Reject this item report? It will not appear in the catalog.")) return;
+      const res = await fetchAPI(`/items/${id}/reject`, { method: "PUT" });
+      if (res.ok) {
+        showToast("Item report rejected.", "info");
+        loadAdminPendingReports();
+        loadAdminStats();
+      } else {
+        showToast(res.data?.message || "Could not reject item", "error");
+      }
+    }
+
+    // ── Admin: Claims Review ──────────────────────────────────────────────
+    async function loadAdminClaims() {
+      const tbody = document.getElementById("admin-claims-tbody");
+      try {
+        const res = await fetchAPI("/claims");
+        if (res.ok && res.data && Array.isArray(res.data.claims)) {
+          const claims = res.data.claims;
+          if (claims.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="6" class="empty-state">No claims submitted yet.</td></tr>`;
+            return;
+          }
+          tbody.innerHTML = claims.map((c) => {
+            const claimantName = c.userId?.name || "Unknown";
+            const claimantEmail = c.userId?.email || "—";
+            const itemTitle = c.itemId?.title || c.itemSnapshot?.title || "Unknown Item";
+            const itemId = c.itemId?._id || c.itemId;
+            const dateStr = new Date(c.createdAt).toLocaleDateString();
+            return `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px 16px;">
+                  <strong>${escapeHtml(claimantName)}</strong>
+                  <div style="font-size: 12px; color: var(--text-muted);">${escapeHtml(claimantEmail)}</div>
+                  ${c.contactPhone ? `<div style="font-size: 11px; color: var(--text-muted);">Phone: ${escapeHtml(c.contactPhone)}</div>` : ""}
+                </td>
+                <td style="padding: 12px 16px;">
+                  <strong>${escapeHtml(itemTitle)}</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(c.itemSnapshot?.category || "")} &bull; ${escapeHtml(c.itemSnapshot?.location || "")}</div>
+                </td>
+                <td style="padding: 12px 16px;">
+                  <div style="font-size: 13px; margin-bottom: 4px;"><strong>Details:</strong> ${truncateText(escapeHtml(c.description), 80)}</div>
+                  <div style="font-size: 12px; color: var(--primary);"><strong>Feature:</strong> ${truncateText(escapeHtml(c.uniqueFeature), 60)}</div>
+                  ${c.lostDate ? `<div style="font-size: 11px; color: var(--text-muted);">Lost date: ${new Date(c.lostDate).toLocaleDateString()}</div>` : ""}
+                  ${c.proofImage ? `<div style="margin-top: 6px;"><a href="${getUploadUrl(c.proofImage)}" target="_blank" class="btn btn-sm btn-secondary" style="font-size: 11px; padding: 2px 8px;">View Proof</a></div>` : ""}
+                </td>
+                <td style="padding: 12px 16px;">${dateStr}</td>
+                <td style="padding: 12px 16px;">${getClaimBadge(c.status)}</td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div class="table-actions" style="justify-content: flex-end; flex-direction: column; align-items: flex-end; gap: 4px;">
+                    ${c.status === "pending" ? `
+                      <button onclick="approveClaim('${c._id}')" class="btn btn-sm btn-success" style="font-size: 12px;">Approve Claim</button>
+                      <button onclick="openRejectModal('${c._id}')" class="btn btn-sm btn-danger" style="font-size: 12px;">Reject</button>
+                    ` : ""}
+                    ${c.status === "approved" && itemId ? `
+                      <button onclick="markItemReturned('${itemId}')" class="btn btn-sm btn-ghost" style="font-size: 12px; color: var(--emerald-600); border: 1px solid var(--emerald-600);">Mark Item Returned</button>
+                    ` : ""}
+                    ${(c.status === "rejected" || c.status === "completed" || c.status === "withdrawn") ? `
+                      <span style="font-size: 12px; color: var(--text-muted);">Finalised</span>
+                    ` : ""}
+                  </div>
+                </td>
+              </tr>`;
+          }).join("");
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Error loading claims.</td></tr>`;
+      }
+    }
+
+    // ── Admin: All Items ──────────────────────────────────────────────────
+    async function loadAdminItems() {
+      const tbody = document.getElementById("admin-items-tbody");
+      try {
+        const res = await fetchAPI("/items/admin/all");
+        if (res.ok && res.data && Array.isArray(res.data.items)) {
+          const items = res.data.items;
+          if (items.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="7" class="empty-state">No items found.</td></tr>`;
+            return;
+          }
+          tbody.innerHTML = items.map((item) => {
+            const typeClass = item.type === "lost" ? "badge-lost" : "badge-found";
+            return `
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 12px 16px;">
+                  <strong>${escapeHtml(item.title)}</strong>
+                  ${item.linkedLostItem ? `<div style="font-size: 11px; color: var(--primary);">Linked Found Report</div>` : ""}
+                </td>
+                <td style="padding: 12px 16px;"><span class="badge ${typeClass}">${item.type.toUpperCase()}</span></td>
+                <td style="padding: 12px 16px;">${escapeHtml(item.category)}</td>
+                <td style="padding: 12px 16px;">
+                  ${escapeHtml(item.reporterName || "Unknown")}
+                  <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(item.reporterEmail || "")}</div>
+                </td>
+                <td style="padding: 12px 16px;">${getStatusBadge(item.status)}</td>
+                <td style="padding: 12px 16px;">${new Date(item.createdAt).toLocaleDateString()}</td>
+                <td style="padding: 12px 16px; text-align: right;">
+                  <div class="table-actions" style="justify-content: flex-end;">
+                    ${item.status === "approved" ? `<button onclick="markItemReturned('${item._id}')" class="btn btn-sm btn-ghost" style="color: var(--emerald-600); font-size: 12px;">Mark Returned</button>` : ""}
+                    <button onclick="deleteItem('${item._id}')" class="btn btn-sm btn-ghost" style="color: var(--rose-600); font-size: 12px;">Delete</button>
+                  </div>
+                </td>
+              </tr>`;
+          }).join("");
+        }
+      } catch (e) {
+        tbody.innerHTML = `<tr><td colspan="7" class="empty-state">Error loading items.</td></tr>`;
+      }
+    }
+
+    async function markItemReturned(id) {
+      if (!confirm("Mark this item as returned to owner? This action cannot be undone.")) return;
+      const res = await fetchAPI(`/items/${id}/return`, { method: "PUT" });
+      if (res.ok) {
+        showToast("Item marked as returned. All approved claims completed.", "success");
+        loadAdminItems();
+        loadAdminClaims();
+        loadAdminStats();
+      } else {
+        showToast(res.data?.message || "Could not mark as returned", "error");
+      }
+    }
+
+    // ── Shared Actions ────────────────────────────────────────────────────
+    async function deleteItem(id) {
+      if (!confirm("Permanently delete this item listing?")) return;
+      const res = await fetchAPI(`/items/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Item deleted.", "success");
+        loadMyItems();
+        if (currentUser?.role === "admin") {
+          loadAdminStats();
+          loadAdminItems();
+          loadAdminPendingReports();
+        }
+      } else {
+        showToast(res.data?.message || "Could not delete item", "error");
+      }
+    }
+
+    async function withdrawClaim(id) {
+      if (!confirm("Withdraw this claim?")) return;
+      const res = await fetchAPI(`/claims/${id}/withdraw`, { method: "PATCH" });
+      if (res.ok) {
+        showToast("Claim withdrawn.", "info");
+        loadMyClaims();
+      } else {
+        showToast(res.data?.message || "Could not withdraw claim", "error");
+      }
+    }
+
+    async function approveClaim(id) {
+      if (!confirm("Approve this claim? Other pending claims for this item will be rejected. The item will be marked as returned after physical handover.")) return;
+      const res = await fetchAPI(`/claims/${id}/approve`, { method: "PUT" });
+      if (res.ok) {
+        showToast("Claim approved. Use 'Mark Item Returned' after physical handover.", "success");
+        loadAdminClaims();
+        loadAdminStats();
+      } else {
+        showToast(res.data?.message || "Could not approve claim", "error");
+      }
+    }
+
+    // ── Rejection Modal ───────────────────────────────────────────────────
+    const rejectModal = document.getElementById("reject-modal");
+    const rejectForm = document.getElementById("reject-form");
+    const rejectClaimId = document.getElementById("reject-claim-id");
+    const rejectReason = document.getElementById("reject-reason");
+
+    function openRejectModal(id) {
+      rejectClaimId.value = id;
+      rejectReason.value = "";
+      rejectModal.style.display = "flex";
+    }
+
+    function closeRejectModal() {
+      rejectModal.style.display = "none";
+    }
+
+    document.getElementById("close-reject-modal-btn").addEventListener("click", closeRejectModal);
+    document.getElementById("cancel-reject-btn").addEventListener("click", closeRejectModal);
+
+    rejectForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const id = rejectClaimId.value;
+      const reason = rejectReason.value.trim();
+      if (!reason) {
+        showToast("Please provide a rejection reason.", "error");
+        return;
+      }
+      const res = await fetchAPI(`/claims/${id}/reject`, {
+        method: "PUT",
+        body: { reason },
+      });
+      if (res.ok) {
+        showToast("Claim rejected.", "info");
+        closeRejectModal();
+        loadAdminClaims();
+        loadAdminStats();
+      } else {
+        showToast(res.data?.message || "Could not reject claim", "error");
+      }
+    });
+  </script>
+</body>
+</html>

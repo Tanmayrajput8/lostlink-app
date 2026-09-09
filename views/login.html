@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login – LostLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body class="auth-page">
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">Lost<span>Link</span></a>
+      <div id="nav-links" class="nav-links">
+        <a href="items.html" class="nav-link">Browse Items</a>
+      </div>
+      <div id="nav-right" class="nav-right">
+        <a href="register.html" class="btn btn-sm btn-primary">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">Lost<span>Link</span></div>
+        <h1>Welcome Back</h1>
+        <p>Log in to access your campus lost and found account</p>
+      </div>
+
+      <div id="login-alert" class="alert alert-error" style="display: none;"></div>
+
+      <form id="login-form" novalidate>
+        <div class="form-group">
+          <label class="form-label" for="email">Campus Email</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            class="form-input"
+            placeholder="student@campus.edu"
+            required
+            data-validate="email"
+            autocomplete="email"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="password">Password</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            class="form-input"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn btn-primary btn-full btn-lg" style="margin-top: 10px;">
+          Sign In
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account? <a href="register.html">Create an account</a>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      // If already authenticated, redirect based on role
+      if (isAuthenticated()) {
+        const u = getUser();
+        window.location.href = (u && u.role === "admin") ? "dashboard.html" : "dashboard.html";
+        return;
+      }
+
+      const params = new URLSearchParams(window.location.search);
+      const alertDiv = document.getElementById("login-alert");
+      if (params.get("expired")) {
+        alertDiv.textContent = "Your session has expired. Please log in again.";
+        alertDiv.style.display = "flex";
+      }
+
+      const form = document.getElementById("login-form");
+      const submitBtn = document.getElementById("submit-btn");
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        alertDiv.style.display = "none";
+
+        if (!validateForm(form)) return;
+
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `<span class="spinner"></span> Signing in...`;
+
+        try {
+          const res = await fetchAPI("/auth/login", {
+            method: "POST",
+            body: { email, password },
+          });
+
+          if (res.ok && res.data && res.data.token) {
+            saveAuth(res.data.token, res.data.user);
+            showToast("Logged in successfully!", "success");
+
+            // Role-based redirect: both user and admin go to dashboard
+            // (dashboard.html renders admin banner/tabs automatically based on role)
+            const role = res.data.user && res.data.user.role;
+            const defaultRedirect = role === "admin" ? "dashboard.html" : "dashboard.html";
+            const redirect = params.get("redirect") || defaultRedirect;
+            setTimeout(() => {
+              window.location.href = redirect;
+            }, 800);
+          } else {
+            alertDiv.textContent = res.data.message || "Invalid email or password.";
+            alertDiv.style.display = "flex";
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Sign In";
+          }
+        } catch (err) {
+          alertDiv.textContent = "Network error connecting to server.";
+          alertDiv.style.display = "flex";
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Sign In";
+        }
+      });
+    });
+  </script>
+</body>
+</html>

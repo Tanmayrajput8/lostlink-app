@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Found Item – LostLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">Lost<span>Link</span></a>
+      <div id="nav-links" class="nav-links">
+        <a href="items.html" class="nav-link">Browse Items</a>
+        <a href="report-lost.html" class="nav-link">Report Lost</a>
+        <a href="report-found.html" class="nav-link active">Report Found</a>
+      </div>
+      <div id="nav-right" class="nav-right">
+        <a href="login.html" class="btn btn-sm btn-ghost">Login</a>
+        <a href="register.html" class="btn btn-sm btn-primary">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Page Header -->
+  <header style="background: var(--surface); border-bottom: 1px solid var(--border); padding: 28px 0 24px;">
+    <div class="container" style="max-width: 800px;">
+      <a href="items.html" style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 12px; text-decoration: none;">
+        &larr; Back to catalog
+      </a>
+      <h1 style="font-size: 24px; font-weight: 700; color: var(--slate-900); margin: 0 0 6px;">Report a Found Item</h1>
+      <p style="color: var(--text-muted); font-size: 14px; margin: 0;">
+        Provide details about the item you found so the owner can identify and claim it.
+      </p>
+    </div>
+  </header>
+
+  <!-- Linked Lost Item Banner (shown only when coming from "I Found This Item") -->
+  <div id="linked-banner" style="display: none; background: #eff6ff; border-bottom: 1px solid #bfdbfe;">
+    <div class="container" style="max-width: 800px; padding: 14px 20px;">
+      <div style="display: flex; align-items: flex-start; gap: 10px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 1px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div>
+          <div style="font-weight: 600; color: #1e40af; font-size: 14px; margin-bottom: 2px;">Linked to a Lost Item Report</div>
+          <div id="linked-banner-text" style="font-size: 13px; color: #1d4ed8;">
+            You are reporting a found item related to an existing lost item report. Some fields have been pre-filled.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="container" style="max-width: 800px; padding: 32px 20px 80px;">
+    <div class="card" style="padding: 32px;">
+      <form id="report-found-form" novalidate>
+        <input type="hidden" name="type" value="found" />
+        <input type="hidden" id="linkedLostItem" name="linkedLostItem" value="" />
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label required" for="title">Item Name / Summary</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-input"
+            placeholder="e.g., Blue Stainless Water Bottle, Set of Dorm Keys with Red Lanyard"
+            minlength="3"
+            maxlength="100"
+            required
+            data-validate="title"
+          />
+          <span class="form-hint">Do not reveal unique private details (like serial numbers) in the public title.</span>
+        </div>
+
+        <!-- Category & Location Row -->
+        <div class="grid grid-2" style="gap: 20px;">
+          <div class="form-group">
+            <label class="form-label required" for="category">Category</label>
+            <select id="category" name="category" class="form-select" required>
+              <option value="">Select Category</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Wallet">Wallet / Purse</option>
+              <option value="Keys">Keys</option>
+              <option value="Bag">Bag / Backpack</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Books">Books &amp; Notebooks</option>
+              <option value="Jewellery">Jewellery &amp; Watch</option>
+              <option value="ID">ID Card / Campus Card</option>
+              <option value="Sports">Sports Equipment</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="location">Location Where Found</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              class="form-input"
+              placeholder="e.g., Science Block B, Room 204 or Cafeteria"
+              minlength="2"
+              maxlength="200"
+              required
+              data-validate="location"
+            />
+          </div>
+        </div>
+
+        <!-- Date & Time Row -->
+        <div class="grid grid-2" style="gap: 20px;">
+          <div class="form-group">
+            <label class="form-label required" for="date">Date Found</label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              class="form-input"
+              required
+            />
+            <span class="form-hint">Date cannot be in the future.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="time">Approximate Time (Optional)</label>
+            <input
+              type="time"
+              id="time"
+              name="time"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label required" for="description">Description &amp; Current Location of Item</label>
+          <textarea
+            id="description"
+            name="description"
+            class="form-textarea"
+            rows="4"
+            placeholder="General appearance, brand, color, where you found it, and where the item is currently held (e.g., deposited with security desk)."
+            minlength="10"
+            maxlength="2000"
+            required
+            data-validate="description"
+          ></textarea>
+          <span class="form-hint">Keep at least one specific detail private so the owner can prove ownership during a claim.</span>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="form-group">
+          <label class="form-label" for="image">Item Photo (Optional)</label>
+          <div id="image-dropzone" class="file-upload-zone" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 24px; text-align: center; cursor: pointer;">
+            <div id="upload-prompt">
+              <div style="margin-bottom: 8px; color: var(--slate-400);">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/></svg>
+              </div>
+              <p style="font-weight: 600; color: var(--slate-700); margin-bottom: 4px;">Click to upload or drag &amp; drop</p>
+              <p style="font-size: 12px; color: var(--text-muted);">PNG, JPG, WEBP up to 5MB</p>
+            </div>
+            <div id="image-preview-wrap" style="display: none; position: relative; max-width: 260px; margin: 0 auto;">
+              <img id="image-preview" src="" alt="Preview" style="width: 100%; border-radius: var(--radius-md); max-height: 200px; object-fit: cover;" />
+              <button type="button" id="remove-image-btn" class="btn btn-sm btn-secondary" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 11px;">Remove</button>
+            </div>
+            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" style="display: none;" />
+          </div>
+        </div>
+
+        <!-- Phone Contact -->
+        <div class="form-group">
+          <label class="form-label" for="phone">Alternate Contact Phone (Optional)</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            class="form-input"
+            placeholder="10-digit mobile number"
+            pattern="[0-9]{10}"
+            maxlength="10"
+            data-validate="phone"
+          />
+          <span class="form-hint">Helps the admin or owner reach you to arrange pickup.</span>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px;">
+          <a href="items.html" class="btn btn-secondary">Cancel</a>
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            Submit Found Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // 1. Guard route
+    requireAuth();
+    renderNavbar();
+
+    // 2. Set today as max date
+    const dateInput = document.getElementById("date");
+    const todayStr = new Date().toISOString().split("T")[0];
+    dateInput.max = todayStr;
+    dateInput.value = todayStr;
+
+    // 3. Check for ?linkedLostItem=<id> param ("I Found This Item" flow)
+    const params = new URLSearchParams(window.location.search);
+    const linkedLostItemId = params.get("linkedLostItem");
+
+    if (linkedLostItemId) {
+      document.getElementById("linkedLostItem").value = linkedLostItemId;
+
+      // Fetch the original lost item to pre-fill fields and show banner
+      (async function loadLinkedItem() {
+        try {
+          const res = await fetchAPI(`/items/${linkedLostItemId}`);
+          if (res.ok && res.data && res.data.item) {
+            const lostItem = res.data.item;
+
+            // Show banner
+            document.getElementById("linked-banner").style.display = "block";
+            document.getElementById("linked-banner-text").textContent =
+              `You are reporting that you found: "${lostItem.title}" (${lostItem.category}). Category has been pre-filled from the original report.`;
+
+            // Pre-fill title and category
+            document.getElementById("title").value = lostItem.title;
+            document.getElementById("title").readOnly = true;
+
+            const catSelect = document.getElementById("category");
+            const matchOpt = Array.from(catSelect.options).find(o => o.value === lostItem.category);
+            if (matchOpt) catSelect.value = lostItem.category;
+
+          } else {
+            // Invalid linked item — clear param and continue normally
+            document.getElementById("linkedLostItem").value = "";
+          }
+        } catch (e) {
+          document.getElementById("linkedLostItem").value = "";
+        }
+      })();
+    }
+
+    // 4. Image dropzone setup
+    const dropzone = document.getElementById("image-dropzone");
+    const fileInput = document.getElementById("image");
+    const previewWrap = document.getElementById("image-preview-wrap");
+    const previewImg = document.getElementById("image-preview");
+    const uploadPrompt = document.getElementById("upload-prompt");
+    const removeBtn = document.getElementById("remove-image-btn");
+
+    dropzone.addEventListener("click", (e) => {
+      if (e.target !== removeBtn) fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => { handleFile(fileInput.files[0]); });
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = "var(--primary)";
+    });
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.style.borderColor = "var(--border)";
+    });
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = "var(--border)";
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput.value = "";
+      previewWrap.style.display = "none";
+      uploadPrompt.style.display = "block";
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Image must be smaller than 5MB", "error");
+        fileInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        previewImg.src = ev.target.result;
+        uploadPrompt.style.display = "none";
+        previewWrap.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 5. Handle form submission
+    const form = document.getElementById("report-found-form");
+    const submitBtn = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (typeof validateForm === "function" && !validateForm(form)) {
+        showToast("Please correct the errors in the form.", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting...";
+
+      try {
+        const formData = new FormData(form);
+
+        const res = await fetchAPI("/items", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok && res.data && res.data.success) {
+          showToast(res.data.message || "Found item reported successfully!", "success");
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 1400);
+        } else {
+          showToast(res.data?.message || "Failed to submit report.", "error");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Found Report";
+        }
+      } catch (err) {
+        showToast("Network error. Please ensure the backend is running.", "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Found Report";
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Report Lost Item – LostLink</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="navbar-inner">
+      <a href="index.html" class="nav-logo">Lost<span>Link</span></a>
+      <div id="nav-links" class="nav-links">
+        <a href="items.html" class="nav-link">Browse Items</a>
+        <a href="report-lost.html" class="nav-link active">Report Lost</a>
+        <a href="report-found.html" class="nav-link">Report Found</a>
+      </div>
+      <div id="nav-right" class="nav-right">
+        <a href="login.html" class="btn btn-sm btn-ghost">Login</a>
+        <a href="register.html" class="btn btn-sm btn-primary">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Page Header -->
+  <header class="section-header" style="background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-page) 100%); padding: 40px 0 20px; border-bottom: 1px solid var(--border-color);">
+    <div class="container" style="max-width: 800px;">
+      <span class="badge badge-lost" style="font-size: 13px; margin-bottom: 8px;">Lost an item?</span>
+      <h1 style="font-size: 28px; margin-bottom: 8px;">Report a Lost Item</h1>
+      <p style="color: var(--text-muted); font-size: 15px;">
+        Fill out this report with as much detail as possible. Our smart matching system will automatically scan found items to notify you of potential matches.
+      </p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container" style="max-width: 800px; padding: 32px 20px 80px;">
+    <div class="card" style="padding: 32px;">
+      <form id="report-lost-form" novalidate>
+        <input type="hidden" name="type" value="lost" />
+
+        <!-- Title -->
+        <div class="form-group">
+          <label class="form-label required" for="title">Item Name / Title</label>
+          <input
+            type="text"
+            id="title"
+            name="title"
+            class="form-input"
+            placeholder="e.g., Space Gray MacBook Air M1, Black Leather Wallet"
+            minlength="3"
+            maxlength="100"
+            required
+            data-validate="title"
+          />
+          <span class="form-hint">Must be 3–100 characters and describe the item clearly.</span>
+        </div>
+
+        <!-- Category & Location Row -->
+        <div class="grid grid-2" style="gap: 20px;">
+          <div class="form-group">
+            <label class="form-label required" for="category">Category</label>
+            <select id="category" name="category" class="form-select" required>
+              <option value="">Select Category</option>
+              <option value="Electronics">Electronics</option>
+              <option value="Wallet">Wallet / Purse</option>
+              <option value="Keys">Keys</option>
+              <option value="Bag">Bag / Backpack</option>
+              <option value="Clothing">Clothing</option>
+              <option value="Books">Books & Notebooks</option>
+              <option value="Jewellery">Jewellery & Watch</option>
+              <option value="ID">ID Card / Campus Card</option>
+              <option value="Sports">Sports Equipment</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label required" for="location">Location Where Lost</label>
+            <input
+              type="text"
+              id="location"
+              name="location"
+              class="form-input"
+              placeholder="e.g., Central Library, 2nd Floor"
+              minlength="2"
+              maxlength="200"
+              required
+              data-validate="location"
+            />
+          </div>
+        </div>
+
+        <!-- Date & Time Row -->
+        <div class="grid grid-2" style="gap: 20px;">
+          <div class="form-group">
+            <label class="form-label required" for="date">Date Lost</label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              class="form-input"
+              required
+            />
+            <span class="form-hint">Date cannot be in the future.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="time">Approximate Time (Optional)</label>
+            <input
+              type="time"
+              id="time"
+              name="time"
+              class="form-input"
+            />
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+          <label class="form-label required" for="description">Detailed Description</label>
+          <textarea
+            id="description"
+            name="description"
+            class="form-textarea"
+            rows="4"
+            placeholder="Describe color, brand, stickers, scratches, case, contents, or any details to help identify it."
+            minlength="10"
+            maxlength="2000"
+            required
+            data-validate="description"
+          ></textarea>
+          <span class="form-hint">At least 10 characters.</span>
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="form-group">
+          <label class="form-label" for="image">Item Photo (Optional)</label>
+          <div id="image-dropzone" class="file-upload-zone" style="border: 2px dashed var(--border-color); border-radius: var(--radius-md); padding: 24px; text-align: center; cursor: pointer; transition: var(--transition-base);">
+            <div id="upload-prompt">
+              <div style="font-size: 32px; margin-bottom: 8px;">📷</div>
+              <p style="font-weight: 600; color: var(--slate-700); margin-bottom: 4px;">Click to upload or drag & drop</p>
+              <p style="font-size: 12px; color: var(--text-muted);">PNG, JPG, WEBP up to 5MB</p>
+            </div>
+            <div id="image-preview-wrap" style="display: none; position: relative; max-width: 260px; margin: 0 auto;">
+              <img id="image-preview" src="" alt="Preview" style="width: 100%; border-radius: var(--radius-md); max-height: 200px; object-fit: cover;" />
+              <button type="button" id="remove-image-btn" class="btn btn-sm btn-secondary" style="position: absolute; top: 8px; right: 8px; padding: 4px 8px; font-size: 11px;">✕ Remove</button>
+            </div>
+            <input type="file" id="image" name="image" accept="image/jpeg,image/png,image/webp" style="display: none;" />
+          </div>
+        </div>
+
+        <!-- Phone Contact -->
+        <div class="form-group">
+          <label class="form-label" for="phone">Alternate Contact Phone (Optional)</label>
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            class="form-input"
+            placeholder="10-digit mobile number"
+            pattern="[0-9]{10}"
+            maxlength="10"
+            data-validate="phone"
+          />
+          <span class="form-hint">Your campus email is already attached to this report.</span>
+        </div>
+
+        <!-- Submit Buttons -->
+        <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 32px;">
+          <a href="items.html" class="btn btn-secondary">Cancel</a>
+          <button type="submit" id="submit-btn" class="btn btn-primary">
+            Submit Lost Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
+
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/validation.js"></script>
+  <script src="js/main.js"></script>
+  <script>
+    // 1. Guard route
+    requireAuth();
+
+    // Populate categories dynamically from database if available
+    (async function loadCategories() {
+      try {
+        const res = await fetchAPI("/categories");
+        if (res.ok && res.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          const select = document.getElementById("category");
+          const current = select.value;
+          select.innerHTML = '<option value="">Select Category</option>' +
+            res.data.data.map(c => `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`).join("");
+          if (current) select.value = current;
+        }
+      } catch (e) {}
+    })();
+
+    // 2. Initialize navbar
+    renderNavbar();
+
+    // 3. Set today as max date
+    const dateInput = document.getElementById("date");
+    const todayStr = new Date().toISOString().split("T")[0];
+    dateInput.max = todayStr;
+    dateInput.value = todayStr;
+
+    // 4. Setup image drag-drop & preview
+    const dropzone = document.getElementById("image-dropzone");
+    const fileInput = document.getElementById("image");
+    const previewWrap = document.getElementById("image-preview-wrap");
+    const previewImg = document.getElementById("image-preview");
+    const uploadPrompt = document.getElementById("upload-prompt");
+    const removeBtn = document.getElementById("remove-image-btn");
+
+    dropzone.addEventListener("click", (e) => {
+      if (e.target !== removeBtn) fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => {
+      handleFile(fileInput.files[0]);
+    });
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = "var(--primary)";
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.style.borderColor = "var(--border-color)";
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.style.borderColor = "var(--border-color)";
+      if (e.dataTransfer.files.length) {
+        fileInput.files = e.dataTransfer.files;
+        handleFile(e.dataTransfer.files[0]);
+      }
+    });
+
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      fileInput.value = "";
+      previewWrap.style.display = "none";
+      uploadPrompt.style.display = "block";
+    });
+
+    function handleFile(file) {
+      if (!file) return;
+      if (file.size > 5 * 1024 * 1024) {
+        showToast("Image must be smaller than 5MB", "error");
+        fileInput.value = "";
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        previewImg.src = ev.target.result;
+        uploadPrompt.style.display = "none";
+        previewWrap.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // 5. Handle form submission
+    const form = document.getElementById("report-lost-form");
+    const submitBtn = document.getElementById("submit-btn");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      if (!validateForm(form)) {
+        showToast("Please correct the errors in the form.", "error");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Submitting Report...";
+
+      try {
+        const formData = new FormData(form);
+
+        const res = await fetchAPI("/items", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (res.ok && res.data && res.data.success) {
+          showToast(res.data.message || "Lost item reported successfully!", "success");
+          setTimeout(() => {
+            window.location.href = "dashboard.html";
+          }, 1400);
+        } else {
+          showToast(res.data?.message || "Failed to submit report.", "error");
+          submitBtn.disabled = false;
+          submitBtn.textContent = "Submit Lost Report";
+        }
+      } catch (err) {
+        showToast("Network error. Please ensure the backend is running.", "error");
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Submit Lost Report";
+      }
+    });
+  </script>
+</body>
+</html>

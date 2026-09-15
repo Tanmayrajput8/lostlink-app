@@ -10,10 +10,8 @@ provider "aws" {
   region = "ap-south-1"
 }
 
-# -------------------------
-# Security Group
-# -------------------------
 
+# Security Group
 resource "aws_security_group" "lostlink_sg" {
   name        = "lostlink-security-group"
   description = "Security group for LostLink application"

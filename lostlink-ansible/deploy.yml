@@ -17,5 +17,4 @@
         restart_policy: unless-stopped
         ports:
           - "5000:5000"
-        env:
-          MONGO_URI: mongodb+srv://tanmayrajput1778_db_user:6rKEghAbxEZwdTpr@cluster0.w9j54ir.mongodb.net/?appName=Cluster0
+        

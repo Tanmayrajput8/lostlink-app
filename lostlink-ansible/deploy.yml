@@ -17,4 +17,5 @@
         restart_policy: unless-stopped
         ports:
           - "5000:5000"
-        
+        env:
+          MONGO_URI: "{{ mongo_uri }}"

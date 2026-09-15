@@ -67,15 +67,15 @@ function truncateText(str, maxLen = 60) {
 /**
  * Build the full URL to an uploaded image file served by Express.
  * @param {string} filename - just the stored filename (e.g. "abc123.jpg")
- * @returns {string} - full relative URL like "/uploads/abc123.jpg"
+ * @returns {string} - full backend URL for the uploaded image
  */
 function getUploadUrl(filename) {
   if (!filename) return "";
   const imagePath = String(filename).replace(/\\/g, "/");
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) return imagePath;
-  if (imagePath.startsWith("/uploads/")) return imagePath;
-  if (imagePath.startsWith("uploads/")) return `/${imagePath}`;
-  return `/uploads/${imagePath}`;
+  if (imagePath.startsWith("/uploads/")) return `${UPLOADS_BASE_URL}${imagePath.slice("/uploads".length)}`;
+  if (imagePath.startsWith("uploads/")) return `${UPLOADS_BASE_URL}/${imagePath.slice("uploads/".length)}`;
+  return `${UPLOADS_BASE_URL}/${imagePath}`;
 }
 
 // ── Formatters ─────────────────────────────────────────────────────────────

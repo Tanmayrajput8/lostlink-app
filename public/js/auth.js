@@ -70,7 +70,7 @@ function renderNavbar() {
       <a href="items.html" class="nav-link">Browse Items</a>
       <a href="report-lost.html" class="nav-link">Report Lost</a>
       <a href="report-found.html" class="nav-link">Report Found</a>
-      <a href="dashboard.html" class="nav-link" style="font-weight: 600; color: var(--primary);">
+      <a href="dashboard.html" class="nav-link">
         ${user.role === "admin" ? "Admin Panel" : "My Dashboard"}
       </a>
     `;
@@ -93,6 +93,22 @@ function renderNavbar() {
       <a href="register.html" class="btn btn-sm btn-primary">Register</a>
     `;
   }
+
+  const currentPath = window.location.pathname.replace(/\/$/, "");
+  const currentPage = currentPath.split("/").pop();
+  let activeLinkFound = false;
+
+  navLinks.querySelectorAll(".nav-link").forEach((link) => {
+    const linkPath = new URL(link.getAttribute("href"), window.location.href).pathname.replace(/\/$/, "");
+    const linkPage = linkPath.split("/").pop();
+    const isActive = !activeLinkFound && linkPage === currentPage;
+
+    link.classList.remove("active");
+    if (isActive) {
+      link.classList.add("active");
+      activeLinkFound = true;
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", renderNavbar);

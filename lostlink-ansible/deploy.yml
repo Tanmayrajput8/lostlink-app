@@ -1,0 +1,21 @@
+- name: Deploy LostLink
+  hosts: lostlink
+  become: yes
+
+  tasks:
+    - name: Pull LostLink image
+      community.docker.docker_image:
+        name: tanmayrajput08/lostlink-app
+        tag: latest
+        source: pull
+
+    - name: Run LostLink container
+      community.docker.docker_container:
+        name: lostlink
+        image: tanmayrajput08/lostlink-app:latest
+        state: started
+        restart_policy: unless-stopped
+        ports:
+          - "5000:5000"
+        env:
+          MONGO_URI: mongodb+srv://tanmayrajput1778_db_user:6rKEghAbxEZwdTpr@cluster0.w9j54ir.mongodb.net/?appName=Cluster0

@@ -3,9 +3,12 @@
  * Centralized HTTP request utility with automatic Bearer token injection
  */
 
-// Relative URLs for single-origin Express serving (same port)
-const API_BASE_URL = "/api";
-const UPLOADS_BASE_URL = "/uploads";
+// Use the local backend during development and the EC2 backend in production.
+const API_BASE_URL =
+  window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5000"
+    : "http://15.207.242.134:5000";
+const UPLOADS_BASE_URL = `${API_BASE_URL}/uploads`;
 
 /**
  * Perform an HTTP request to the backend REST API
@@ -14,7 +17,7 @@ const UPLOADS_BASE_URL = "/uploads";
  * @returns {Promise<{ ok: boolean, status: number, data: any }>}
  */
 async function fetchAPI(endpoint, options = {}) {
-  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}${endpoint}`;
+  const url = endpoint.startsWith("http") ? endpoint : `${API_BASE_URL}/api${endpoint}`;
   const headers = options.headers ? { ...options.headers } : {};
 
   // Automatically attach JWT Bearer token if present
@@ -71,7 +74,7 @@ async function fetchAPI(endpoint, options = {}) {
       status: 0,
       data: {
         success: false,
-        message: "Cannot connect to server. Ensure the backend is running on http://localhost:5000",
+        message: "Cannot connect to the server. Please try again.",
       },
     };
   }
